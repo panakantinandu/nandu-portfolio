@@ -44,7 +44,7 @@ const projects = [
       'MySQL schema + migrations for reliability',
     ],
     stack: ['PHP', 'MySQL', 'HTML', 'CSS', 'JavaScript', 'Bootstrap'],
-    links: { demo: '#', code: '#' },
+    links: { demo: '#', code: 'https://github.com/panakantinandu/studymate' },
   },
   {
     title: 'Community Food Sharing Platform',
@@ -66,7 +66,7 @@ const projects = [
       'Grad‑CAM & SHAP/LIME explanations',
     ],
     stack: ['Python', 'PyTorch', 'OpenCV', 'Librosa', 'Transformers'],
-    links: { demo: '#', code: '#' },
+    links: { demo: '#', code: 'https://github.com/panakantinandu/deepfake-detection-system_NanduML' },
   },
    {
     title: 'Property Management Platform',
@@ -77,7 +77,7 @@ const projects = [
       'Twilio/Firebase notifications for events',
     ],
     stack: ['React', 'Node', 'Express', 'MongoDB', 'Stripe', 'Firebase'],
-    links: { demo: '#', code: '#' },
+    links: { demo: '#', code: 'https://github.com/panakantinandu/Property-MS-main' },
   },
   {
     title: 'MQWC Bandpass Filter (HFSS)',
