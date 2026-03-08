@@ -1,1 +1,4 @@
 @import "tailwindcss";
+i[class^="devicon"] {
+  font-style: normal;
+}
