@@ -142,6 +142,68 @@ const PROJECTS = [
     },
   },
 ];
+//certificates
+const CERTIFICATES = [
+  {
+    id: "walmart",
+    name: "Advanced Software Engineering Job Simulation",
+    issuer: "Walmart",
+    date: "May 2025",
+    credentialId: "GdMwD3PmFhM4ECmYS",
+    skills: ["Data Structures", "UML", "Relational Databases"],
+    description:
+      "Completed real-world backend engineering tasks including system design and data modeling.",
+    link: "https://forage-uploads-prod.s3.amazonaws.com/completion-certificates/prBZoAihniNijyD6d/oX6f9BbCL9kJDJzfg_prBZoAihniNijyD6d_hFspdJeJnuae3BoDB_1747109821353_completion_certificate.pdf"
+  },
+  {
+    id: "skyscanner",
+    name: "Software Engineering Job Simulation",
+    issuer: "Skyscanner",
+    date: "Apr 2025",
+    credentialId: "hdjhWrTH3R8dnkFQM",
+    skills: ["React.js", "Figma", "Microservices"],
+    description:
+      "Worked on frontend systems and microservices architecture simulation.",
+    link: "https://forage-uploads-prod.s3.amazonaws.com/completion-certificates/skoQmxqhtgWmKv2pm/p3xGFkpdot5H8NBih_skoQmxqhtgWmKv2pm_hFspdJeJnuae3BoDB_1745513981330_completion_certificate.pdf"
+  },
+  {
+    id: "python",
+    name: "Full Stack - Python",
+    issuer: "Sreyas Institute of Engineering & Technology",
+    date: "2024",
+    skills: ["Python"],
+    description:
+      "Built full-stack applications using Python technologies.",
+    link: "#"
+  },
+  {
+    id: "python-ds",
+    name: "Python for Data Science",
+    issuer: "NPTEL",
+    date: "Jul 2023",
+    skills: [
+      "Python",
+      "Data Science",
+      "Data Analysis",
+      "Data Visualization",
+      "Machine Learning",
+      "Big Data"
+    ],
+    description:
+      "Gained hands-on experience in data analysis, visualization, and machine learning using Python.",
+    link: "https://archive.nptel.ac.in/content/noc/NOC23/SEM2/Ecertificates/106/noc23-cs99/Course/NPTEL23CS99S4570083010087952.pdf"
+  },
+  {
+    id: "dbms",
+    name: "Database Management System",
+    issuer: "NPTEL",
+    date: "Jul 2023",
+    skills: ["SQL", "NoSQL", "Database Design"],
+    description:
+      "Learned database design, querying, and system architecture.",
+    link: "https://archive.nptel.ac.in/content/noc/NOC23/SEM2/Ecertificates/106/noc23-cs79/Course/NPTEL23CS79S3570127910087952.pdf"
+  }
+];
 
 // Production principles
 const SYSTEMS = [
@@ -203,6 +265,7 @@ function Navigation() {
   const navItems = [
     { id: "about", label: "About" },
     { id: "projects", label: "Projects" },
+    { id: "certificates", label: "Certificates"},
     { id: "systems", label: "Systems" },
     { id: "skills", label: "Skills" },
     { id: "contact", label: "Contact" },
@@ -773,6 +836,100 @@ function ProjectsSection() {
 }
 
 
+function CertificatesSection() {
+  const [selectedCert, setSelectedCert] = useState("walmart");
+  const currentCert = CERTIFICATES.find(c => c.id === selectedCert);
+
+  return (
+      <section
+        id="certificates"
+        className="relative py-32 px-6 bg-slate-950 overflow-hidden"
+      >
+      {/* Background */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-500/20 blur-[140px]"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/20 blur-[140px]"></div>
+
+      <div className="max-w-7xl mx-auto">
+
+        {/* Title */}
+        <div className="text-center mb-16">
+          <h2 className="text-5xl font-bold text-white mb-4">
+            Licenses & Certifications
+          </h2>
+          <p className="text-slate-400 text-lg">
+            Verified credentials and professional training
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex flex-wrap justify-center gap-4 mb-14">
+          {CERTIFICATES.map(cert => (
+            <button
+              key={cert.id}
+              onClick={() => setSelectedCert(cert.id)}
+              className={`px-6 py-3 rounded-xl border transition ${
+                selectedCert === cert.id
+                  ? "bg-indigo-500/20 border-indigo-400 text-white"
+                  : "bg-white/5 border-white/10 text-slate-400"
+              }`}
+            >
+              <div className="font-semibold">{cert.issuer}</div>
+              <div className="text-xs opacity-70">{cert.date}</div>
+            </button>
+          ))}
+        </div>
+
+        {/* Card */}
+        {currentCert && (
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-10">
+
+            <h3 className="text-3xl font-bold text-white mb-2">
+              {currentCert.name}
+            </h3>
+
+            <p className="text-slate-400 mb-6">
+              {currentCert.issuer} • {currentCert.date}
+            </p>
+
+            <p className="text-slate-300 mb-6">
+              {currentCert.description}
+            </p>
+
+            {currentCert.credentialId && (
+              <p className="text-sm text-slate-500 mb-6">
+                Credential ID: {currentCert.credentialId}
+              </p>
+            )}
+
+            {/* Skills */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {currentCert.skills.map(skill => (
+                <span
+                  key={skill}
+                  className="px-3 py-1 text-xs rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+
+            {/* Button */}
+            <a
+              href={currentCert.link}
+              target="_blank"
+              className="px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
+            >
+              View Certificate
+            </a>
+
+          </div>
+        )}
+
+      </div>
+    </section>
+  );
+}
+
 function SystemsSection() {
   return (
     <section
@@ -1107,6 +1264,7 @@ export default function Portfolio() {
       <HeroSection />
       <AboutSection />
       <ProjectsSection />
+      <CertificatesSection/>
       <SystemsSection />
       <SkillsSection />
       <ContactSection />

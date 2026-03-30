@@ -626,6 +626,35 @@ export default function Portfolio() {
           ))}
         </div>
       </section>
+      {/* CERTIFICATES */}
+      <section id="certificates" className="mx-auto max-w-6xl px-4 py-20">
+        <SectionHeader 
+          title="Licenses & Certifications" 
+          subtitle="Professional credentials and learning milestones." 
+        />
+
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+          {certificates.map((cert) => (
+            <motion.div key={cert.title} {...fadeUp}>
+              <Card className="h-full">
+
+                <h3 className="text-base font-semibold text-white">
+                  {cert.title}
+                </h3>
+
+                <p className="mt-2 text-sm text-slate-400">
+                  {cert.issuer}
+                </p>
+
+                <p className="text-xs text-slate-500 mt-1">
+                  {cert.date}
+                </p>
+
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </section>
 
       {/* GITHUB STATS */}
       <section id="github" className="mx-auto max-w-6xl px-4 py-20">
