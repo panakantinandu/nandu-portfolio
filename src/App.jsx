@@ -1,6 +1,29 @@
-import React, { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
 import Lottie from "lottie-react";
+import "./App.css";
+
+// ====== CUSTOM HOOKS ======
+function useMousePosition(ref) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const handleMouse = useCallback((e) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set((e.clientX - centerX) / (rect.width / 2));
+    y.set((e.clientY - centerY) / (rect.height / 2));
+  }, [ref, x, y]);
+
+  const handleLeave = useCallback(() => {
+    x.set(0);
+    y.set(0);
+  }, [x, y]);
+
+  return { x, y, handleMouse, handleLeave };
+}
 
 // ====== HONEST DATA ONLY ======
 const CONTACT = {
@@ -313,27 +336,53 @@ const SYSTEMS = [
 // ====== ANIMATION VARIANTS ======
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] } },
 };
 
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+    transition: { staggerChildren: 0.12, delayChildren: 0.15 },
   },
+};
+
+const sectionReveal = {
+  hidden: { opacity: 0, y: 60 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+};
+
+const staggerTabs = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+  },
+};
+
+const tabItem = {
+  hidden: { opacity: 0, y: 15, scale: 0.95 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+const listItemReveal = {
+  hidden: { opacity: 0, x: -20 },
+  visible: (i) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: i * 0.06, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+  }),
 };
 
 // ====== COMPONENTS ======
 
 function Navigation() {
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   const navItems = [
     { id: "about", label: "About" },
@@ -346,34 +395,33 @@ function Navigation() {
 
   return (
     <>
-      {/* Scroll progress bar */}
+      {/* Scroll progress bar — spring-eased */}
       <motion.div
-        className="fixed top-0 left-0 h-[3px] z-50 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
-        style={{
-          width:
-            typeof window !== "undefined"
-              ? `${(scrollY /
-                  (document.documentElement.scrollHeight -
-                    window.innerHeight)) *
-                100}%`
-              : "0%",
-        }}
+        className="fixed top-0 left-0 right-0 h-[3px] z-50 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 scroll-progress"
+        style={{ scaleX, transformOrigin: "0%" }}
       />
 
       {/* Navbar */}
       <motion.nav
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
         className="fixed top-5 left-0 right-0 z-40"
       >
         <div className="max-w-7xl mx-auto px-6">
 
-          <div className="flex items-center justify-between backdrop-blur-xl bg-slate-900/60 border border-white/10 rounded-xl px-6 py-3 shadow-lg">
+          <motion.div
+            className="flex items-center justify-between backdrop-blur-xl bg-slate-900/60 border border-white/10 rounded-xl px-6 py-3 shadow-lg shadow-black/20"
+            initial={{ backdropFilter: "blur(0px)" }}
+            animate={{ backdropFilter: "blur(20px)" }}
+            transition={{ duration: 1 }}
+          >
 
             {/* Logo */}
             <motion.a
               href="#"
               whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.97 }}
               className="text-white font-semibold text-lg tracking-wide"
             >
               {CONTACT.name}
@@ -381,19 +429,17 @@ function Navigation() {
 
             {/* Navigation links */}
             <div className="hidden md:flex items-center gap-8">
-              {navItems.map((item) => (
+              {navItems.map((item, i) => (
                 <motion.a
                   key={item.id}
                   href={`#${item.id}`}
-                  className="text-sm text-slate-400 hover:text-white transition relative"
+                  className="text-sm text-slate-400 hover:text-white transition-colors duration-300 relative animated-underline"
                   whileHover={{ y: -1 }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 + i * 0.08, duration: 0.4 }}
                 >
                   {item.label}
-
-                  <motion.div
-                    className="absolute left-0 -bottom-1 h-[2px] w-0 bg-indigo-400"
-                    whileHover={{ width: "100%" }}
-                  />
                 </motion.a>
               ))}
             </div>
@@ -403,14 +449,14 @@ function Navigation() {
               href={CONTACT.resume}
               target="_blank"
               rel="noreferrer"
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(99,102,241,0.4)" }}
               whileTap={{ scale: 0.95 }}
-              className="px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm shadow-md"
+              className="magnetic-btn px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm shadow-md"
             >
               Resume
             </motion.a>
 
-          </div>
+          </motion.div>
 
         </div>
       </motion.nav>
@@ -420,24 +466,39 @@ function Navigation() {
 
 
 function HeroSection() {
+  const heroRef = useRef(null);
+  const { x: mouseX, y: mouseY, handleMouse, handleLeave } = useMousePosition(heroRef);
+  const rotateX = useSpring(useTransform(mouseY, [-1, 1], [8, -8]), { stiffness: 150, damping: 20 });
+  const rotateY = useSpring(useTransform(mouseX, [-1, 1], [-8, 8]), { stiffness: 150, damping: 20 });
+
   return (
     <section
       id="hero"
       className="min-h-screen flex items-center relative overflow-hidden pt-20 px-6 bg-slate-950"
+      ref={heroRef}
+      onMouseMove={handleMouse}
+      onMouseLeave={handleLeave}
     >
       {/* background glow */}
       <div className="absolute inset-0 -z-10">
 
         <motion.div
-          className="absolute top-20 left-10 w-[380px] h-[380px] bg-indigo-500/20 rounded-full blur-[120px]"
+          className="absolute top-20 left-10 w-[380px] h-[380px] bg-indigo-500/20 rounded-full blur-[120px] glow-pulse"
           animate={{ x: [0, 40, 0], y: [0, 30, 0] }}
-          transition={{ duration: 12, repeat: Infinity }}
+          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
         />
 
         <motion.div
           className="absolute bottom-10 right-10 w-[380px] h-[380px] bg-purple-500/20 rounded-full blur-[120px]"
           animate={{ x: [0, -40, 0], y: [0, -30, 0] }}
-          transition={{ duration: 14, repeat: Infinity }}
+          transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+        />
+
+        {/* Additional subtle glow behind headline */}
+        <motion.div
+          className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-pink-500/10 rounded-full blur-[160px]"
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
 
       </div>
@@ -449,9 +510,9 @@ function HeroSection() {
 
           {/* badge */}
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            initial={{ opacity: 0, y: -10, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ delay: 0.2, duration: 0.6 }}
             className="inline-block mb-5 px-4 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10"
           >
             <span className="text-indigo-300 text-sm">
@@ -461,31 +522,32 @@ function HeroSection() {
 
           {/* headline */}
           <motion.h1
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ delay: 0.3, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-snug mb-5"
           >
             Building scalable backend systems for
 
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
-              payments, users & real-world scale
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 animated-gradient-text">
+              payments, users &amp; real-world scale
             </span>
           </motion.h1>
 
           {/* accent line */}
           <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: 120 }}
-            transition={{ delay: 0.5 }}
-            className="h-[3px] bg-gradient-to-r from-indigo-500 to-purple-500 rounded mb-6"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.5, duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="h-[3px] w-[120px] bg-gradient-to-r from-indigo-500 to-purple-500 rounded mb-6"
+            style={{ transformOrigin: "left" }}
           />
 
           {/* description */}
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
             className="text-slate-400 text-[15px] leading-relaxed mb-7 max-w-lg"
           >
             Backend-focused developer building production SaaS platforms
@@ -495,31 +557,42 @@ function HeroSection() {
 
           {/* tech tags */}
           <div className="flex flex-wrap gap-2 mb-7">
-            {["React", "Node.js", "PostgreSQL", "Distributed Systems"].map((t) => (
-              <span
+            {["React", "Node.js", "PostgreSQL", "Distributed Systems"].map((t, i) => (
+              <motion.span
                 key={t}
-                className="px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-300 border border-slate-700"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 + i * 0.1, duration: 0.4 }}
+                whileHover={{ scale: 1.08, borderColor: "rgba(99,102,241,0.6)" }}
+                className="px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-300 border border-slate-700 transition-colors duration-300"
               >
                 {t}
-              </span>
+              </motion.span>
             ))}
           </div>
 
           {/* buttons */}
-          <div className="flex gap-3 flex-wrap">
+          <motion.div
+            className="flex gap-3 flex-wrap"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.5 }}
+          >
 
             <motion.a
               href="#projects"
-              whileHover={{ y: -2 }}
-              className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm shadow-lg shadow-indigo-500/30"
+              whileHover={{ y: -3, boxShadow: "0 8px 30px rgba(99,102,241,0.4)" }}
+              whileTap={{ scale: 0.97 }}
+              className="magnetic-btn px-6 py-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm shadow-lg shadow-indigo-500/30"
             >
               View Projects
             </motion.a>
 
             <motion.a
               href={`mailto:${CONTACT.email}`}
-              whileHover={{ y: -2 }}
-              className="px-6 py-2.5 rounded-lg border border-slate-600 text-slate-300 text-sm hover:text-white"
+              whileHover={{ y: -3, borderColor: "rgba(99,102,241,0.5)" }}
+              whileTap={{ scale: 0.97 }}
+              className="px-6 py-2.5 rounded-lg border border-slate-600 text-slate-300 text-sm hover:text-white transition-colors duration-300"
             >
               Contact
             </motion.a>
@@ -528,27 +601,30 @@ function HeroSection() {
               href={CONTACT.github}
               target="_blank"
               rel="noreferrer"
-              whileHover={{ y: -2 }}
-              className="px-6 py-2.5 rounded-lg border border-slate-600 text-slate-300 text-sm hover:text-white"
+              whileHover={{ y: -3, borderColor: "rgba(99,102,241,0.5)" }}
+              whileTap={{ scale: 0.97 }}
+              className="px-6 py-2.5 rounded-lg border border-slate-600 text-slate-300 text-sm hover:text-white transition-colors duration-300"
             >
               GitHub
             </motion.a>
 
-          </div>
+          </motion.div>
 
         </div>
 
-        {/* RIGHT SIDE ANIMATION */}
+        {/* RIGHT SIDE ANIMATION — 3D tilt on mouse */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
           className="flex justify-center"
+          style={{ perspective: 800 }}
         >
           <motion.div
             animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 6, repeat: Infinity }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             className="w-[360px] max-w-full"
+            style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
           >
             <Lottie
               path="/animations/tech-startup.json"
@@ -562,11 +638,17 @@ function HeroSection() {
 
       {/* scroll indicator */}
       <motion.div
-        className="absolute bottom-10 left-1/2 -translate-x-1/2"
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5, duration: 1 }}
       >
-        <div className="w-[2px] h-6 bg-indigo-400/40" />
+        <span className="text-[10px] text-slate-500 tracking-widest uppercase">Scroll</span>
+        <motion.div
+          className="w-[2px] h-6 bg-gradient-to-b from-indigo-400/60 to-transparent"
+          animate={{ y: [0, 8, 0], opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
       </motion.div>
 
     </section>
@@ -698,9 +780,10 @@ function ProjectsSection() {
 
         {/* Title */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          variants={sectionReveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
           className="text-center mb-16"
         >
           <h2 className="text-5xl font-bold text-white mb-4">
@@ -713,37 +796,42 @@ function ProjectsSection() {
         </motion.div>
 
         {/* Project Tabs */}
-        <div className="flex flex-wrap justify-center gap-4 mb-14">
-
+        <motion.div
+          className="flex flex-wrap justify-center gap-4 mb-14"
+          variants={staggerTabs}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {PROJECTS.map((project) => (
             <motion.button
               key={project.id}
+              variants={tabItem}
               onClick={() => setSelectedProject(project.id)}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className={`px-6 py-3 rounded-xl border transition backdrop-blur ${
+              className={`px-6 py-3 rounded-xl border transition-all duration-300 backdrop-blur ${
                 selectedProject === project.id
-                  ? "bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border-indigo-400 text-white shadow-lg"
-                  : "bg-white/5 border-white/10 text-slate-400 hover:border-indigo-400"
+                  ? "bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border-indigo-400 text-white shadow-lg shadow-indigo-500/20"
+                  : "bg-white/5 border-white/10 text-slate-400 hover:border-indigo-400/60"
               }`}
             >
               <div className="font-semibold">{project.name}</div>
               <div className="text-xs opacity-70">{project.status}</div>
             </motion.button>
           ))}
-
-        </div>
+        </motion.div>
 
         {/* Project Card */}
         <AnimatePresence mode="wait">
           {currentProject && (
             <motion.div
               key={currentProject.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
-              transition={{ duration: 0.5 }}
-              className="relative rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-10 shadow-xl"
+              initial={{ opacity: 0, y: 40, filter: "blur(6px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -20, filter: "blur(4px)" }}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="relative rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-10 shadow-xl card-glow"
             >
               <div className="grid lg:grid-cols-2 gap-14 items-start">
 
@@ -782,13 +870,17 @@ function ProjectsSection() {
 
                   {/* Tech Stack */}
                   <div className="flex flex-wrap gap-2">
-                    {currentProject.techStack.map((tech) => (
-                      <span
+                    {currentProject.techStack.map((tech, i) => (
+                      <motion.span
                         key={tech}
-                        className="px-3 py-1 text-xs rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.05, duration: 0.3 }}
+                        whileHover={{ scale: 1.1, backgroundColor: "rgba(99,102,241,0.3)" }}
+                        className="px-3 py-1 text-xs rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 transition-colors duration-200"
                       >
                         {tech}
-                      </span>
+                      </motion.span>
                     ))}
                   </div>
                 </div>
@@ -806,12 +898,13 @@ function ProjectsSection() {
                       {currentProject.whatBuilt.map((item, idx) => (
                         <motion.li
                           key={idx}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05 }}
+                          custom={idx}
+                          variants={listItemReveal}
+                          initial="hidden"
+                          animate="visible"
                           className="flex gap-2 text-slate-300 text-sm"
                         >
-                          <span className="text-indigo-400">→</span>
+                          <span className="text-indigo-400 flex-shrink-0">→</span>
                           {item}
                         </motion.li>
                       ))}
@@ -828,12 +921,13 @@ function ProjectsSection() {
                       {currentProject.architecture.map((item, idx) => (
                         <motion.li
                           key={idx}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05 + 0.2 }}
+                          custom={idx + 3}
+                          variants={listItemReveal}
+                          initial="hidden"
+                          animate="visible"
                           className="flex gap-2 text-slate-300 text-sm"
                         >
-                          <span className="text-purple-400">•</span>
+                          <span className="text-purple-400 flex-shrink-0">•</span>
                           {item}
                         </motion.li>
                       ))}
@@ -848,9 +942,9 @@ function ProjectsSection() {
                         href={currentProject.links.github}
                         target="_blank"
                         rel="noreferrer"
-                        whileHover={{ scale: 1.05 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        className="px-5 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 transition"
+                        className="magnetic-btn px-5 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 transition-all duration-300"
                       >
                         GitHub
                       </motion.a>
@@ -910,7 +1004,7 @@ function ProjectsSection() {
 
 
 function CertificatesSection() {
-  const [selectedCert, setSelectedCert] = useState("walmart");
+  const [selectedCert, setSelectedCert] = useState("aws-cloud-arch");
   const currentCert = CERTIFICATES.find(c => c.id === selectedCert);
 
   return (
@@ -925,36 +1019,59 @@ function CertificatesSection() {
       <div className="max-w-7xl mx-auto">
 
         {/* Title */}
-        <div className="text-center mb-16">
+        <motion.div
+          variants={sectionReveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+          className="text-center mb-16"
+        >
           <h2 className="text-5xl font-bold text-white mb-4">
             Licenses & Certifications
           </h2>
           <p className="text-slate-400 text-lg">
             Verified credentials and professional training
           </p>
-        </div>
+        </motion.div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap justify-center gap-4 mb-14">
+        <motion.div
+          className="flex flex-wrap justify-center gap-4 mb-14"
+          variants={staggerTabs}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {CERTIFICATES.map(cert => (
-            <button
+            <motion.button
               key={cert.id}
+              variants={tabItem}
               onClick={() => setSelectedCert(cert.id)}
-              className={`px-6 py-3 rounded-xl border transition ${
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              className={`px-6 py-3 rounded-xl border transition-all duration-300 ${
                 selectedCert === cert.id
-                  ? "bg-indigo-500/20 border-indigo-400 text-white"
-                  : "bg-white/5 border-white/10 text-slate-400"
+                  ? "bg-indigo-500/20 border-indigo-400 text-white shadow-lg shadow-indigo-500/20"
+                  : "bg-white/5 border-white/10 text-slate-400 hover:border-indigo-400/60"
               }`}
             >
               <div className="font-semibold">{cert.issuer}</div>
               <div className="text-xs opacity-70">{cert.date}</div>
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
         {/* Card */}
+        <AnimatePresence mode="wait">
         {currentCert && (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-10">
+          <motion.div
+            key={currentCert.id}
+            initial={{ opacity: 0, y: 30, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -15, filter: "blur(4px)" }}
+            transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-10 card-glow"
+          >
 
             <h3 className="text-3xl font-bold text-white mb-2">
               {currentCert.name}
@@ -976,27 +1093,34 @@ function CertificatesSection() {
 
             {/* Skills */}
             <div className="flex flex-wrap gap-2 mb-6">
-              {currentCert.skills.map(skill => (
-                <span
+              {currentCert.skills.map((skill, i) => (
+                <motion.span
                   key={skill}
-                  className="px-3 py-1 text-xs rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.04, duration: 0.3 }}
+                  whileHover={{ scale: 1.1, backgroundColor: "rgba(99,102,241,0.3)" }}
+                  className="px-3 py-1 text-xs rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 transition-colors duration-200"
                 >
                   {skill}
-                </span>
+                </motion.span>
               ))}
             </div>
 
             {/* Button */}
-            <a
+            <motion.a
               href={currentCert.link}
               target="_blank"
-              className="px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
+              whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(99,102,241,0.35)" }}
+              whileTap={{ scale: 0.95 }}
+              className="magnetic-btn inline-block px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
             >
               View Certificate
-            </a>
+            </motion.a>
 
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
 
       </div>
     </section>
@@ -1017,9 +1141,10 @@ function SystemsSection() {
 
         {/* Title */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          variants={sectionReveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
           className="text-center mb-20"
         >
           <h2 className="text-5xl font-bold text-white mb-4">
@@ -1061,8 +1186,8 @@ function SystemsSection() {
               <motion.div
                 key={idx}
                 variants={fadeInUp}
-                whileHover={{ y: -10, scale: 1.03 }}
-                className="group relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-xl overflow-hidden transition"
+                whileHover={{ y: -10, scale: 1.03, transition: { type: "spring", stiffness: 300, damping: 20 } }}
+                className="group relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-xl overflow-hidden transition-shadow duration-500 card-glow"
               >
                 <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 blur-xl group-hover:opacity-60 transition duration-500"></div>
 
@@ -1070,7 +1195,9 @@ function SystemsSection() {
 
                   <motion.div
                     className="w-14 h-14 flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 mb-5 text-2xl"
-                    whileHover={{ rotate: 8, scale: 1.1 }}
+                    whileHover={{ rotate: 12, scale: 1.15 }}
+                    animate={{ rotate: [0, 2, -2, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                   >
                     {system.icon}
                   </motion.div>
@@ -1122,9 +1249,10 @@ function SkillsSection() {
 
         {/* title */}
         <motion.h2
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          variants={sectionReveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
           className="text-3xl font-bold text-white mb-12 text-center"
         >
           Skills & Technologies
@@ -1157,28 +1285,25 @@ function SkillsSection() {
         </motion.div>
 
         {/* Skills grid */}
-        <div className="grid md:grid-cols-2 gap-10">
+        <motion.div
+          className="grid md:grid-cols-2 gap-10"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+        >
 
           {SKILLS.map((category, index) => (
 
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.6 }}
+              variants={fadeInUp}
               whileHover={{
                 y: -10,
-                scale: 1.03
+                scale: 1.03,
+                transition: { type: "spring", stiffness: 300, damping: 20 }
               }}
-              className="
-              relative
-              p-6
-              rounded-xl
-              bg-slate-900/60
-              border border-slate-800
-              backdrop-blur
-              overflow-hidden
-              "
+              className="relative p-6 rounded-xl bg-slate-900/60 border border-slate-800 backdrop-blur overflow-hidden card-glow"
             >
 
               {/* animated border glow */}
@@ -1202,14 +1327,16 @@ function SkillsSection() {
                 src={`https://skillicons.dev/icons?i=${category.icons}`}
                 className="max-w-full relative z-10"
                 whileHover={{
-                  scale: 1.08
+                  scale: 1.08,
+                  transition: { type: "spring", stiffness: 200, damping: 15 }
                 }}
                 animate={{
                   y: [0, -6, 0]
                 }}
                 transition={{
-                  duration: 5,
-                  repeat: Infinity
+                  duration: 4 + index * 0.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
                 }}
               />
 
@@ -1217,7 +1344,7 @@ function SkillsSection() {
 
           ))}
 
-        </div>
+        </motion.div>
 
       </div>
     </section>
@@ -1274,8 +1401,8 @@ function ContactSection() {
         >
           <motion.a
             href={`mailto:${CONTACT.email}`}
-            className="px-8 py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium hover:shadow-xl hover:shadow-indigo-500/30 transition"
-            whileHover={{ scale: 1.05, y: -2 }}
+            className="magnetic-btn px-8 py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium transition-shadow duration-300"
+            whileHover={{ scale: 1.05, y: -3, boxShadow: "0 8px 30px rgba(99,102,241,0.4)" }}
             whileTap={{ scale: 0.95 }}
           >
             Send Email
@@ -1284,8 +1411,8 @@ function ContactSection() {
             href={CONTACT.linkedin}
             target="_blank"
             rel="noreferrer"
-            className="px-8 py-3 rounded-lg border border-slate-600 text-slate-300 font-medium hover:border-slate-400 hover:text-white transition"
-            whileHover={{ scale: 1.05, y: -2 }}
+            className="px-8 py-3 rounded-lg border border-slate-600 text-slate-300 font-medium hover:text-white transition-all duration-300"
+            whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(99,102,241,0.5)" }}
             whileTap={{ scale: 0.95 }}
           >
             LinkedIn
@@ -1294,8 +1421,8 @@ function ContactSection() {
             href={CONTACT.github}
             target="_blank"
             rel="noreferrer"
-            className="px-8 py-3 rounded-lg border border-slate-600 text-slate-300 font-medium hover:border-slate-400 hover:text-white transition"
-            whileHover={{ scale: 1.05, y: -2 }}
+            className="px-8 py-3 rounded-lg border border-slate-600 text-slate-300 font-medium hover:text-white transition-all duration-300"
+            whileHover={{ scale: 1.05, y: -3, borderColor: "rgba(99,102,241,0.5)" }}
             whileTap={{ scale: 0.95 }}
           >
             GitHub
@@ -1332,14 +1459,20 @@ export default function Portfolio() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white overflow-x-hidden noise-overlay">
       <Navigation />
       <HeroSection />
+      <div className="section-divider" />
       <AboutSection />
+      <div className="section-divider" />
       <ProjectsSection />
+      <div className="section-divider" />
       <CertificatesSection/>
+      <div className="section-divider" />
       <SystemsSection />
+      <div className="section-divider" />
       <SkillsSection />
+      <div className="section-divider" />
       <ContactSection />
     </div>
   );
