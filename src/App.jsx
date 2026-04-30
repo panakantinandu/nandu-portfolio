@@ -12,42 +12,34 @@ const CONTACT = {
   resume: "/Resume(Nan).pdf",
 };
 const SKILLS = [
-
-{
-title: "Languages",
-icons: "java,js,ts,python,php"
-},
-
-{
-title: "Frontend",
-icons: "react,angular,html,css,bootstrap"
-},
-
-{
-title: "Backend",
-icons: "nodejs,express,spring"
-},
-
-{
-title: "Databases",
-icons: "mongodb,postgres,mysql"
-},
-
-{
-title: "Distributed Systems",
-icons: "redis,kafka"
-},
-
-{
-title: "Cloud & DevOps",
-icons: "aws,docker,github,git,firebase,vercel"
-},
-
-{
-title: "Tools",
-icons: "vscode,idea,postman"
-}
-
+  {
+    title: "Backend & Runtime",
+    icons: "nodejs,express,spring,php"
+  },
+  {
+    title: "Languages",
+    icons: "java,js,ts,python"
+  },
+  {
+    title: "Databases",
+    icons: "mongodb,postgres,mysql,redis"
+  },
+  {
+    title: "Cloud & Infrastructure",
+    icons: "aws,docker,firebase,vercel"
+  },
+  {
+    title: "Messaging & Streaming",
+    icons: "kafka"
+  },
+  {
+    title: "Frontend",
+    icons: "react,angular,html,css,bootstrap"
+  },
+  {
+    title: "DevOps & Tooling",
+    icons: "git,github,vscode,idea,postman"
+  }
 ];
 // Real projects - honest presentation
 const PROJECTS = [
@@ -55,27 +47,27 @@ const PROJECTS = [
     id: "leasehub",
     name: "LeaseHub",
     status: "Production",
-    tagline: "Property Management SaaS Platform",
+    tagline: "Multi-Tenant Property Management SaaS",
     problem:
-      "Manual lease management causes payment delays, disputes, and admin overhead. Property managers lack visibility into financials and tenant status.",
+      "Property managers rely on spreadsheets and manual follow-ups for rent collection, lease tracking, and financial reconciliation — leading to missed payments, disputes, and zero audit visibility.",
     solution:
-      "End-to-end automation for the entire lease lifecycle with secure payment processing and real-time reporting.",
+      "Full-stack SaaS platform with separate Admin and Tenant portals, automated billing via Stripe, and a complete audit trail for every financial transaction.",
     whatBuilt: [
-      "Complete lease lifecycle automation (application → approval → deposit → rent → late fees → cancellation)",
-      "Stripe payment integration with webhook verification and transaction reconciliation",
-      "Role-based access control (Admin/Tenant) with JWT authentication",
-      "Automated invoice generation and dispatch via cron jobs",
-      "Comprehensive audit logs for dispute resolution",
-      "Financial ledger with consistency across invoices, payments, and transactions",
+      "End-to-end lease lifecycle engine: application → approval → deposit → recurring rent → late fees → cancellation",
+      "Stripe integration with webhook signature verification, idempotent payment processing, and transaction reconciliation",
+      "JWT-based authentication with refresh token rotation and RBAC middleware (Admin / Tenant)",
+      "Cron-driven invoice generation with retry logic and email dispatch",
+      "Financial ledger maintaining consistency across invoices, payments, and balance records",
+      "Immutable audit log capturing all state transitions for compliance and dispute resolution",
     ],
     architecture: [
-      "RESTful API built with Node.js/Express with auth middleware",
-      "MongoDB schemas with referential integrity for tenants, leases, payments",
-      "Stripe webhooks for real-time payment state synchronization",
-      "Scheduled jobs (node-cron) for recurring invoices and notifications",
-      "Audit trail system capturing all financial transactions",
+      "Node.js/Express REST API with layered middleware (auth, validation, error handling)",
+      "MongoDB Atlas with referential integrity across tenants, leases, invoices, and payment documents",
+      "Stripe webhooks for asynchronous payment state synchronization with idempotency guards",
+      "node-cron scheduler for recurring invoice jobs and overdue payment notifications",
+      "Deployed on Render with separate services for Admin and Tenant frontends",
     ],
-    techStack: ["Node.js", "Express.js", "MongoDB Atlas", "Stripe", "JWT", "React", "Firebase"],
+    techStack: ["Node.js", "Express", "MongoDB Atlas", "Stripe", "JWT", "React", "Render"],
     links: {
       github: "https://github.com/panakantinandu/Property-MS-main",
       adminLive: "https://leasehub-admin.onrender.com/",
@@ -83,57 +75,53 @@ const PROJECTS = [
     },
   },
   {
-    id: "studymate",
-    name: "StudyMate",
+    id: "aws-iam-security",
+    name: "AWS IAM Threat Detector",
     status: "Complete",
-    tagline: "Educational Platform with RBAC",
+    tagline: "Event-Driven IAM Privilege Escalation Detection",
     problem:
-      "Educational institutions needed a secure, scalable platform for course management, session booking, and document sharing.",
+      "Unauthorized IAM policy changes and privilege escalation attempts in AWS accounts often go undetected until a security incident occurs, because native CloudTrail logs are passive and lack real-time alerting.",
     solution:
-      "Full-stack LAMP application with role-based access control, email workflows, and secure file handling.",
+      "Serverless event-driven pipeline that monitors CloudTrail for IAM mutations, evaluates risk via Lambda, and sends real-time alerts through SNS.",
     whatBuilt: [
-      "Secure authentication with bcrypt password hashing and session management",
-      "Role-based access control (Student / Instructor / Admin)",
-      "Email verification and password reset flows via PHPMailer",
-      "MySQL database with normalized schema and proper indexing",
-      "File upload system with validation and storage management",
-      "Bootstrap UI with responsive design",
+      "CloudTrail → EventBridge rule chain filtering IAM-related API calls (AttachUserPolicy, CreateRole, PutRolePolicy)",
+      "Lambda function evaluating event payloads against escalation heuristics and risk scoring",
+      "SNS fan-out for multi-channel alerting (email, Slack-ready webhook)",
+      "IAM least-privilege policies scoped per Lambda execution role",
+      "CloudWatch dashboards for event volume monitoring and alert latency tracking",
     ],
     architecture: [
-      "PHP backend with MVC pattern and middleware",
-      "MySQL relational database with foreign key constraints",
-      "PHPMailer for SMTP email delivery",
-      "Session-based authentication with hashed passwords",
-      "File handling with type validation and secure storage",
+      "Fully serverless — zero standing infrastructure, pay-per-invocation cost model",
+      "Event-driven pipeline: CloudTrail → EventBridge → Lambda → SNS",
+      "Infrastructure defined with IAM policy documents and resource-based permissions",
+      "Decoupled alert routing via SNS topic subscriptions for extensibility",
     ],
-    techStack: ["PHP", "MySQL", "PHPMailer", "Bootstrap", "JavaScript", "HTML5", "CSS3"],
+    techStack: ["AWS Lambda", "CloudTrail", "EventBridge", "SNS", "IAM", "Python"],
     links: {
-      github: "https://github.com/panakantinandu/studymate",
+      github: "https://github.com/panakantinandu",
     },
   },
   {
     id: "attrition",
-    name: "ML Attrition System",
+    name: "Attrition Prediction Engine",
     status: "Deployed",
-    tagline: "Employee Attrition Prediction with Explainability",
+    tagline: "ML System with Explainable Predictions",
     problem:
-      "HR teams lack tools to proactively identify at-risk employees before they leave, leading to costly turnover and knowledge loss.",
+      "HR departments react to employee attrition after resignation, missing the window for intervention. Existing surveys are subjective and lack predictive power.",
     solution:
-      "Machine learning system with SHAP explainability to transparently predict employee attrition.",
+      "Random Forest classification system with SHAP-based explainability, exposing both individual and batch predictions through an interactive Streamlit interface.",
     whatBuilt: [
-      "Random Forest classification model with automated preprocessing pipeline",
-      "Data handling: encoding categorical variables, scaling numerical features, balancing class imbalance",
-      "SHAP dashboard for model explainability and feature importance visualization",
-      "Real-time prediction API with batch processing capabilities",
-      "Streamlit web interface for interactive predictions and model insights",
-      "Deployment on Render for global accessibility",
+      "Random Forest model with automated feature engineering pipeline (encoding, scaling, SMOTE for class imbalance)",
+      "SHAP integration for per-prediction feature attribution and global importance rankings",
+      "Batch prediction mode accepting CSV uploads for bulk HR analysis",
+      "Interactive Streamlit dashboard with filters, charts, and downloadable reports",
+      "Model serialization and versioned deployment on Render",
     ],
     architecture: [
-      "Python/Scikit-Learn for model development and training",
-      "Pandas/NumPy for data manipulation and preprocessing",
-      "SHAP library for explaining model predictions",
-      "Streamlit for web interface and interactive dashboard",
-      "Render for serverless deployment and scaling",
+      "Scikit-Learn pipeline encapsulating preprocessing, training, and inference",
+      "SHAP TreeExplainer for efficient feature contribution computation",
+      "Streamlit server handling both real-time and batch prediction workflows",
+      "Deployed as a containerized service on Render with health checks",
     ],
     techStack: ["Python", "Scikit-Learn", "SHAP", "Streamlit", "Pandas", "NumPy"],
     links: {
@@ -141,67 +129,152 @@ const PROJECTS = [
       github: "https://github.com/panakantinandu/ML_Project-Nan-",
     },
   },
+  {
+    id: "studymate",
+    name: "StudyMate",
+    status: "Complete",
+    tagline: "LAMP-Stack Educational Platform",
+    problem:
+      "Institutions managed course materials, session scheduling, and user access through disconnected tools with no unified access control or audit capability.",
+    solution:
+      "Monolithic PHP application with a normalized MySQL schema, three-tier RBAC, and transactional email workflows for authentication and notifications.",
+    whatBuilt: [
+      "Session-based authentication with bcrypt hashing, CSRF tokens, and secure cookie configuration",
+      "Three-role access control system (Student / Instructor / Admin) enforced at the middleware layer",
+      "Email verification and password reset flows via PHPMailer over SMTP",
+      "Normalized MySQL schema (3NF) with foreign key constraints and composite indexes",
+      "File upload pipeline with MIME validation, size limits, and organized storage paths",
+    ],
+    architecture: [
+      "PHP backend following MVC separation with routing middleware",
+      "MySQL with prepared statements to prevent SQL injection",
+      "PHPMailer handling transactional email delivery over TLS",
+      "Server-side session management with configurable expiry and regeneration",
+    ],
+    techStack: ["PHP", "MySQL", "PHPMailer", "Bootstrap", "JavaScript"],
+    links: {
+      github: "https://github.com/panakantinandu/studymate",
+    },
+  },
+  {
+    id: "leetcode",
+    name: "LeetCode DSA",
+    status: "Ongoing",
+    tagline: "200+ Problems · Core Algorithm Patterns",
+    problem:
+      "Solving isolated coding problems without pattern recognition leads to brute-force solutions and poor performance in system design interviews.",
+    solution:
+      "Systematic problem-solving practice organized by pattern — building reusable mental models for time/space optimization.",
+    whatBuilt: [
+      "200+ problems solved across arrays, trees, graphs, dynamic programming, and sliding window",
+      "Pattern-based approach: two pointers, binary search, BFS/DFS, topological sort, union-find",
+      "Complexity analysis for every solution with space/time trade-off documentation",
+      "Consistent practice in Java and Python for language-agnostic proficiency",
+    ],
+    architecture: [
+      "Solutions organized by pattern category for quick reference",
+      "Edge case documentation and test case design per problem",
+      "Focus on optimal solutions with reasoning over brute-force approaches",
+    ],
+    techStack: ["Java", "Python", "Data Structures", "Algorithms"],
+    links: {
+      github: "https://github.com/panakantinandu",
+    },
+  },
 ];
 //certificates
 const CERTIFICATES = [
   {
+    id: "aws-cloud-arch",
+    name: "AWS Academy Graduate – Cloud Architecting",
+    issuer: "AWS Academy",
+    date: "Apr 2026",
+    skills: ["EC2", "VPC", "Auto Scaling", "RDS", "S3", "ALB", "Security Groups"],
+    description:
+      "Designed multi-tier AWS architectures with compute, networking, storage, and database services following Well-Architected Framework principles.",
+    link: "#"
+  },
+  {
+    id: "aws-cloud-security",
+    name: "AWS Academy Graduate – Cloud Security Foundations",
+    issuer: "AWS Academy",
+    date: "Apr 2026",
+    skills: ["IAM", "Data Protection", "Network Security", "Monitoring"],
+    description:
+      "Applied AWS security controls across identity management, data encryption, network isolation, and audit logging.",
+    link: "#"
+  },
+  {
+    id: "anthropic-claude-api",
+    name: "Building with Claude API",
+    issuer: "Anthropic",
+    date: "Apr 2026",
+    skills: ["LLM Integration", "API Design", "Prompt Engineering"],
+    description:
+      "Built applications integrating Claude's API for structured generation, tool use, and production prompt workflows.",
+    link: "#"
+  },
+  {
+    id: "anthropic-claude-code",
+    name: "Claude Code in Action",
+    issuer: "Anthropic",
+    date: "Apr 2026",
+    skills: ["AI-Assisted Development", "Code Generation"],
+    description:
+      "Applied Claude for code generation, debugging, and automated development workflows.",
+    link: "#"
+  },
+  {
+    id: "anthropic-claude-101",
+    name: "Claude 101",
+    issuer: "Anthropic",
+    date: "Apr 2026",
+    skills: ["LLM Fundamentals", "AI Safety"],
+    description:
+      "Foundational understanding of large language model capabilities, limitations, and responsible usage patterns.",
+    link: "#"
+  },
+  {
     id: "walmart",
-    name: "Advanced Software Engineering Job Simulation",
+    name: "Advanced Software Engineering Simulation",
     issuer: "Walmart",
     date: "May 2025",
     credentialId: "GdMwD3PmFhM4ECmYS",
-    skills: ["Data Structures", "UML", "Relational Databases"],
+    skills: ["System Design", "Data Modeling", "Relational Databases"],
     description:
-      "Completed real-world backend engineering tasks including system design and data modeling.",
+      "Completed backend engineering tasks including heap-based data structures, UML system design, and relational schema modeling.",
     link: "https://forage-uploads-prod.s3.amazonaws.com/completion-certificates/prBZoAihniNijyD6d/oX6f9BbCL9kJDJzfg_prBZoAihniNijyD6d_hFspdJeJnuae3BoDB_1747109821353_completion_certificate.pdf"
   },
   {
     id: "skyscanner",
-    name: "Software Engineering Job Simulation",
+    name: "Software Engineering Simulation",
     issuer: "Skyscanner",
     date: "Apr 2025",
     credentialId: "hdjhWrTH3R8dnkFQM",
-    skills: ["React.js", "Figma", "Microservices"],
+    skills: ["React.js", "Microservices", "Component Design"],
     description:
-      "Worked on frontend systems and microservices architecture simulation.",
+      "Built frontend components and worked with microservices architecture in a simulated production environment.",
     link: "https://forage-uploads-prod.s3.amazonaws.com/completion-certificates/skoQmxqhtgWmKv2pm/p3xGFkpdot5H8NBih_skoQmxqhtgWmKv2pm_hFspdJeJnuae3BoDB_1745513981330_completion_certificate.pdf"
   },
   {
-    id: "python",
-    name: "Full Stack - Python",
-    issuer: "Sreyas Institute of Engineering & Technology",
-    date: "2024",
-    skills: ["Python"],
+    id: "dbms",
+    name: "Database Management Systems",
+    issuer: "NPTEL",
+    date: "Jul 2023",
+    skills: ["SQL", "Normalization", "Query Optimization", "Schema Design"],
     description:
-      "Built full-stack applications using Python technologies.",
-    link: "#"
+      "Covered relational algebra, normalization theory, indexing strategies, and transaction management.",
+    link: "https://archive.nptel.ac.in/content/noc/NOC23/SEM2/Ecertificates/106/noc23-cs79/Course/NPTEL23CS79S3570127910087952.pdf"
   },
   {
     id: "python-ds",
     name: "Python for Data Science",
     issuer: "NPTEL",
     date: "Jul 2023",
-    skills: [
-      "Python",
-      "Data Science",
-      "Data Analysis",
-      "Data Visualization",
-      "Machine Learning",
-      "Big Data"
-    ],
+    skills: ["Python", "Data Analysis", "Visualization", "NumPy", "Pandas"],
     description:
-      "Gained hands-on experience in data analysis, visualization, and machine learning using Python.",
+      "Applied Python for data wrangling, statistical analysis, and visualization using NumPy, Pandas, and Matplotlib.",
     link: "https://archive.nptel.ac.in/content/noc/NOC23/SEM2/Ecertificates/106/noc23-cs99/Course/NPTEL23CS99S4570083010087952.pdf"
-  },
-  {
-    id: "dbms",
-    name: "Database Management System",
-    issuer: "NPTEL",
-    date: "Jul 2023",
-    skills: ["SQL", "NoSQL", "Database Design"],
-    description:
-      "Learned database design, querying, and system architecture.",
-    link: "https://archive.nptel.ac.in/content/noc/NOC23/SEM2/Ecertificates/106/noc23-cs79/Course/NPTEL23CS79S3570127910087952.pdf"
   }
 ];
 
