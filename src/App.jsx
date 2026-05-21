@@ -727,7 +727,7 @@ function AboutSection() {
             </p>
 
             <p className="text-slate-300 text-lg leading-relaxed mb-8">
-              Currently pursuing a Master's in Computer Science (May 2026) and
+              I have completed my Master's in Computer Science (May 2026) and
               actively seeking full-time opportunities to build impactful
               software systems.
             </p>
